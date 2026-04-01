@@ -47,29 +47,13 @@
     .logo-wrap {
       position: relative;
       z-index: 1;
-      width: min(1230px, 96vw);
+      width: min(1640px, 98vw);
     }
     .logo-wrap svg {
       width: 100%;
       height: auto;
       display: block;
       overflow: visible;
-    }
-
-    /* ── Veil: diagonal gradient, opaque bottom-right → transparent top-left ── */
-    .veil {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      background: linear-gradient(
-        to top left,
-        rgba(9, 15, 30, 0.92) 0%,
-        rgba(9, 15, 30, 0.75) 30%,
-        rgba(9, 15, 30, 0.45) 55%,
-        rgba(9, 15, 30, 0.15) 75%,
-        rgba(9, 15, 30, 0.00) 100%
-      );
     }
 
     /* ── Mark animations ── */
@@ -119,8 +103,6 @@
   </style>
 </head>
 <body>
-
-  <div class="veil"></div>
 
   <div class="logo-wrap" aria-label="Flanders Next">
     <svg viewBox="0 0 600 130" fill="none" xmlns="http://www.w3.org/2000/svg">
