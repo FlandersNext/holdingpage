@@ -102,19 +102,7 @@
       overflow: visible;
     }
 
-    /* ── Shield: draws itself on load, then loops every 14s ── */
-    .shield-path {
-      stroke-dasharray: 650;
-      animation: shield-loop 14s cubic-bezier(0.4, 0, 0.2, 1) 0.4s infinite;
-    }
-    @keyframes shield-loop {
-      0%    { stroke-dashoffset: 650; opacity: 0;   }
-      2%    { opacity: 0.5; }
-      9%    { stroke-dashoffset: 0;   opacity: 0.5; }
-      72%   { stroke-dashoffset: 0;   opacity: 0.5; }
-      84%   { stroke-dashoffset: 0;   opacity: 0;   }
-      100%  { stroke-dashoffset: 650; opacity: 0;   }
-    }
+    /* ── Shield paths: animated via JS (see script at bottom) ── */
 
     /* ── Mark group: ambient gold breathe ── */
     .mark-wrap {
@@ -226,6 +214,7 @@
       margin-bottom: 24px;
       opacity: 0;
       animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 1s forwards;
+      text-shadow: 0 1px 24px rgba(6, 15, 30, 0.9), 0 1px 4px rgba(6, 15, 30, 0.7);
     }
 
     .tagline em {
@@ -239,10 +228,11 @@
       font-weight: 300;
       font-size: clamp(14px, 2vw, 16px);
       line-height: 1.75;
-      color: rgba(255, 255, 255, 0.55);
+      color: rgba(255, 255, 255, 0.80);
       max-width: 520px;
       margin-bottom: 48px;
       opacity: 0;
+      text-shadow: 0 1px 20px rgba(6, 15, 30, 0.85);
       animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 1.15s forwards;
     }
 
@@ -402,14 +392,21 @@
           </clipPath>
         </defs>
 
-        <g class="mark-wrap">
-          <!-- Shield: draws and redraws on loop -->
-          <path class="shield-path"
-            d="M8,6 L90,6 L90,72 Q90,110 49,124 Q8,110 8,72 Z"
+        <!-- Shield paths — outside mark-wrap to avoid filter interference -->
+        <g class="shield-group">
+          <!-- Shield stroke 2: right side + bottom curve, top → point -->
+          <path class="shield-s2"
+            d="M90,6 L90,72 Q90,110 49,124"
             stroke="url(#goldG)" stroke-width="1.8"
-            fill="none" stroke-linecap="round" stroke-linejoin="round"
-            opacity="0.50"/>
+            fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Shield stroke 3: left side, point → top -->
+          <path class="shield-s3"
+            d="M49,124 Q8,110 8,72 L8,6"
+            stroke="url(#goldG)" stroke-width="1.8"
+            fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
 
+        <g class="mark-wrap">
           <!-- Generation 1: smallest, most ghosted — the generation we protect -->
           <g class="chev-sm">
             <polygon points="20,22 30,65 20,108 28,108 38,65 28,22" fill="url(#goldGd)"/>
@@ -454,7 +451,7 @@
           x="123" y="118"
           font-family="'Barlow', sans-serif"
           font-weight="400" font-size="9.5" letter-spacing="3.8"
-          fill="rgba(255,255,255,0.22)">NEXT GENERATION FLANDERS</text>
+          fill="rgba(255,255,255,0.75)">NEXT GENERATION FLANDERS</text>
       </svg>
     </div>
 
@@ -493,4 +490,84 @@
   </main>
 
 </body>
+<script>
+(function () {
+  var CYCLE    = 13000;
+  var DRAW_DUR = 900;
+  var STARTS   = [0, DRAW_DUR]; // two strokes now
+  var HOLD_END = 9000;
+  var FADE_DUR = 1800;
+
+  var paths, lengths;
+
+  function init() {
+    paths = [
+      document.querySelector('.shield-s2'),
+      document.querySelector('.shield-s3')
+    ];
+
+    // Measure exact path lengths
+    lengths = paths.map(function (p) { return p.getTotalLength(); });
+
+    // Initialise: hidden and fully offset
+    paths.forEach(function (p, i) {
+      p.style.opacity           = '0';
+      p.style.strokeDasharray   = lengths[i];
+      p.style.strokeDashoffset  = lengths[i];
+    });
+
+    // Ease function: cubic ease-in-out
+    function ease(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    var startTime = null;
+
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var elapsed = (ts - startTime) % CYCLE;
+
+      paths.forEach(function (p, i) {
+        var ds = STARTS[i];
+        var de = ds + DRAW_DUR;
+
+        if (elapsed < ds) {
+          // Not yet started
+          p.style.strokeDashoffset = lengths[i];
+          p.style.opacity = '0';
+        } else if (elapsed < de) {
+          // Drawing
+          var t = ease((elapsed - ds) / DRAW_DUR);
+          p.style.strokeDashoffset = lengths[i] * (1 - t);
+          p.style.opacity = '0.50';
+        } else if (elapsed < HOLD_END) {
+          // Holding fully drawn
+          p.style.strokeDashoffset = '0';
+          p.style.opacity = '0.50';
+        } else if (elapsed < HOLD_END + FADE_DUR) {
+          // Fading out together
+          var f = (elapsed - HOLD_END) / FADE_DUR;
+          p.style.strokeDashoffset = '0';
+          p.style.opacity = (0.50 * (1 - f)).toFixed(3);
+        } else {
+          // Reset — invisible, ready for next cycle
+          p.style.strokeDashoffset = lengths[i];
+          p.style.opacity = '0';
+        }
+      });
+
+      requestAnimationFrame(step);
+    }
+
+    // Small delay so fonts and layout are stable
+    setTimeout(function () { requestAnimationFrame(step); }, 600);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </html>
