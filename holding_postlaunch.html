@@ -349,22 +349,6 @@
         gap: 8px;
       }
     }
-    /* ── Curtain ── */
-    .curtain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-      background: linear-gradient(
-        to top,
-        var(--navy-dk)                 0%,
-        var(--navy-dk)                 30%,
-        rgba(9, 15, 30, 0.93)          48%,
-        rgba(9, 15, 30, 0.65)          60%,
-        rgba(9, 15, 30, 0.25)          72%,
-        transparent                    84%
-      );
-    }
   </style>
 </head>
 <body>
@@ -471,10 +455,39 @@
       </svg>
     </div>
 
-  </main>
+    <!-- Tagline -->
+    <p class="tagline">
+      Niet in Californië, niet in Parijs.<br>
+      <em>In Vlaanderen.</em>
+    </p>
 
-  <!-- Curtain: a dark veil that rises from below, covering ~60% of the page -->
-  <div class="curtain"></div>
+    <!-- Body copy -->
+    <p class="body-copy">
+      Flanders Next bouwt een publieke AI-infrastructuur voor werk, onderwijs en samenleving,
+      verankerd in Vlaanderen, in handen van Vlaanderen.
+      Vlaamse universiteiten, Vlaamse data, Vlaamse regie.
+    </p>
+
+    <!-- Domain pills -->
+    <div class="domains" aria-label="Beleidsdomeinen">
+      <span class="domain-pill active">Werk</span>
+      <span class="domain-pill active">Onderwijs</span>
+      <span class="domain-pill active">Justitie</span>
+    </div>
+
+    <!-- Section rule -->
+    <div class="section-rule" aria-hidden="true"></div>
+
+    <!-- Status -->
+    <div class="status">
+      <div class="status-dot" aria-hidden="true"></div>
+      <span class="status-text">In opbouw &mdash; meer informatie volgt</span>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">flandersnext.be &nbsp;&bull;&nbsp; flandersnext.eu</p>
+
+  </main>
 
 </body>
 <script>
